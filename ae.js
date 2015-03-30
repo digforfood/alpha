@@ -1,15 +1,14 @@
-var AE = function(settings){
+var AE = function(){
 	var that = this;
 	this.JSONDATA = 'jsondata';
 	this.JSONURL = 'jsonurl';
-	this.settings = settings||{};
 
-	this.imgDir = (this.settings.imgDir) ? this.settings.imgDir+'/' : '';
-	this.startImg = (this.settings.startImg) ? 'url('+this.imgDir+this.settings.startImg+')' : '';
-	this.baseRate = this.settings.baseRate || 30;
-	this.windowWidth = this.settings.windowWidth || 640;
-	this.windowHeight = this.settings.windowHeight || 480;
-	this.keyboardEvents = this.settings.keyboardEvents || true;
+	this.imgDir = '';
+	this.startImg = '';
+	this.baseRate = 30;
+	this.windowWidth = 640;
+	this.windowHeight = 480;
+	this.keyboardEvents = true;
 	this.tilemap = false;
 
 	this.gameObjectsArr = [];
@@ -19,23 +18,32 @@ var AE = function(settings){
 	this.gameFrame = $('<div id="gameFrame" style="display:none;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;">');
 	this.sprite = $('<div class="sprite" style="position:absolute;overflow:hidden;"></div>');
 
-	this.init = function(){
-		this.createTilemap();
-
-		$('body').append('<div id="game" style="position:relative;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;overflow:hidden;">');
-		$('#game').append(this.startButton);
-
-		if(this.keyboardEvents){
-			this.keyboardEventsEnable();
-		}
-
-		this.startButton.click(function(){
-			that.startGame();
-		});
-	};
-
 	this.addGameObj = function(obj){
 		this.gameObjectsArr.push(obj);
+	};
+
+	this.setImgDir = function(value){
+		this.imgDir = value +'/';
+	};
+
+	this.setStartImg = function(value){
+		this.startImg = 'url('+ this.imgDir + value +')';
+	};
+
+	this.setBaseRate = function(value){
+		this.baseRate = value;
+	};
+
+	this.setWindowWidth = function(value){
+		this.windowWidth = value;
+	};
+
+	this.setWindowHeight = function(value){
+		this.windowHeight = value;
+	};
+
+	this.setKeyboardEvents = function(value){
+		this.keyboardEvents = value;
 	};
 
 	this.setTilemap = function(data,type){
@@ -52,6 +60,21 @@ var AE = function(settings){
 			});
 		}		
 	};
+
+	this.init = function(){
+		this.createTilemap();
+
+		$('body').append('<div id="game" style="position:relative;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;overflow:hidden;">');
+		$('#game').append(this.startButton);
+
+		if(this.keyboardEvents){
+			this.keyboardEventsEnable();
+		}
+
+		this.startButton.click(function(){
+			that.startGame();
+		});
+	};	
 
 	this.createTilemap = function(){
 		if(this.tilemap){			
@@ -142,7 +165,7 @@ var Player = function(settings){
 
 	this.width = this.settings.width || 74;
 	this.height = this.settings.height || 93;
-	
+
 	this.img = this.settings.img || 'player.png';
 	this.currentFrame = this.settings.currentFrame || 0;
 	this.acceleration = this.settings.acceleration || 9;
