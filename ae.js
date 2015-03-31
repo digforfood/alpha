@@ -58,26 +58,11 @@ var AE = function(){
 					this.tilemap = json;
 				}
 			});
-		}		
+		}
 	};
 
-	this.init = function(){
-		this.createTilemap();
-
-		$('body').append('<div id="game" style="position:relative;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;overflow:hidden;">');
-		$('#game').append(this.startButton);
-
-		if(this.keyboardEvents){
-			this.keyboardEventsEnable();
-		}
-
-		this.startButton.click(function(){
-			that.startGame();
-		});
-	};	
-
 	this.createTilemap = function(){
-		if(this.tilemap){			
+		if(this.tilemap){
 			var x = 0;
 			var y = 0;
 			var tileWidth = this.tilemap.tiles.width;
@@ -113,20 +98,52 @@ var AE = function(){
 		}
 	};
 
-	this.startGame = function(){
-		$('#game').append(this.gameFrame);
+	this.keyboardEventsEnable = function(){
+		$(document).keydown(function(event){
+			that.keyboard[event.keyCode] = true;
+		});
+		$(document).keyup(function(event){
+			that.keyboard[event.keyCode] = false;
+		});
+	};
 
+	this.init = function(){
+		this.createTilemap();
+
+		$('body').append('<div id="game" style="position:relative;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;overflow:hidden;">');
+		$('#game').append(this.startButton);
+
+		if(this.keyboardEvents){
+			this.keyboardEventsEnable();
+		}
+
+		this.startButton.click(function(){
+			that.startGame();
+		});
+	};
+
+	this.startGame = function(){
+
+		setInterval(this.gameLoop, this.baseRate);
+
+		$('#game').append(this.gameFrame);
 		this.startButton.remove();
 		this.gameFrame.show();
 	};
 
-	this.keyboardEventsEnable = function(){
-		$(document).keydown(function(event){
-		    this.keyboard[event.keyCode] = true;
-		});
-		$(document).keyup(function(event){
-		    this.keyboard[event.keyCode] = false;
-		});
+	this.gameLoop = function(){
+		var idle = true;
+		if(that.keyboard[37]){
+			idle = false;
+		}
+		if(that.keyboard[38]){
+			idle = false;
+		}
+		if(that.keyboard[39]){
+			idle = false;
+		}
+		if(idle){
+		}
 	};
 	
 };
@@ -169,22 +186,22 @@ var Player = function(settings){
 	this.img = this.settings.img || 'player.png';
 	this.currentFrame = this.settings.currentFrame || 0;
 	this.acceleration = this.settings.acceleration || 9;
-    this.speed = this.settings.speed || 20;
-    this.status = this.settings.status || "stand";
-    this.horizontalMove = 0;
+	this.speed = this.settings.speed || 20;
+	this.status = this.settings.status || "stand";
+	this.horizontalMove = 0;
 
-    this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
+	this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
 	this.animation = animation;
-        
-    this.left = function (){
-    };
-    
-    this.right = function (){
-    };
-    
-    this.jump  = function (){
-    };
-    
-    this.idle  = function (){
-    };
+		
+	this.left = function (){
+	};
+	
+	this.right = function (){
+	};
+	
+	this.jump  = function (){
+	};
+	
+	this.idle  = function (){
+	};
 };
