@@ -16,7 +16,6 @@ var AE = function(){
 
 	this.startButton = $('<div id="startButton" style="width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;background:'+this.startImg+' #A8E1FF;">');
 	this.gameFrame = $('<div id="gameFrame" style="display:none;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;">');
-	this.sprite = $('<div class="sprite" style="position:absolute;overflow:hidden;"></div>');
 
 	this.addGameObj = function(obj){
 		this.gameObjectsArr.push(obj);
@@ -61,6 +60,20 @@ var AE = function(){
 		}
 	};
 
+	this.createGameFrame = function(){
+		var gameObjectsFrame = $('<div class="gameObjectsFrame" style="position:absolute"></div>');
+		var tilemapFrame = $('<div class="tilemapFrame" style="position:absolute"></div>');
+		for(var i = 0;i < this.gameObjectsArr.length;i++){
+			if(this.gameObjectsArr[i].class == 'tile'){
+				tilemapFrame.append(this.gameObjectsArr[i].sprite);
+			}else if(this.gameObjectsArr[i].class == 'player'){
+				gameObjectsFrame.append(this.gameObjectsArr[i].sprite);
+			}
+		}
+		gameObjectsFrame.append(tilemapFrame);
+		this.gameFrame.append(gameObjectsFrame);
+	};
+
 	this.createTilemap = function(){
 		if(this.tilemap){
 			var x = 0;
@@ -69,7 +82,6 @@ var AE = function(){
 			var tileHeight = this.tilemap.tiles.height;
 			var tilemapWidth = this.tilemap.data[0].length;
 			var tilemapHeight = this.tilemap.data.length;
-			var tilemapFrame = $('<div class="tilemapFrame" style="position:absolute"></div>');
 
 			for(var i=0; i < tilemapHeight; i++){
 				for(var j=0; j < tilemapWidth; j++){
@@ -89,12 +101,10 @@ var AE = function(){
 						
 						var animation = {};
 						var tile = new Tiles(sprite,animation);
-						tilemapFrame.append(tile.sprite);
 						this.addGameObj(tile);
 					}
 				}
 			}
-			this.gameFrame.append(tilemapFrame)
 		}
 	};
 
@@ -109,6 +119,7 @@ var AE = function(){
 
 	this.init = function(){
 		this.createTilemap();
+		this.createGameFrame();
 
 		$('body').append('<div id="game" style="position:relative;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;overflow:hidden;">');
 		$('#game').append(this.startButton);
@@ -144,6 +155,10 @@ var AE = function(){
 		}
 		if(idle){
 		}
+
+		for(var i = 0;i < that.gameObjectsArr.length;i++){
+			that.gameObjectsArr[i].update();
+		}
 	};
 	
 };
@@ -170,11 +185,16 @@ var Sprite = function(settings){
 };
 
 var Tiles = function(sprite,animation){
-		this.sprite = sprite;
-		this.animation = animation;
+	this.class = 'tile';
+	this.sprite = sprite;
+	this.animation = animation;
+	
+	this.update = function(){
 	};
+};
 
 var Player = function(settings){
+	this.class = 'player';
 	this.settings = settings||{};
 
 	this.x = this.settings.x || 0;
@@ -191,17 +211,20 @@ var Player = function(settings){
 	this.horizontalMove = 0;
 
 	this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
-	this.animation = animation;
-		
-	this.left = function (){
+	this.animation = this.settings.animation||{};
+
+	this.update = function(){
 	};
-	
-	this.right = function (){
+
+	this.left = function(){
 	};
-	
-	this.jump  = function (){
+
+	this.right = function(){
 	};
-	
-	this.idle  = function (){
+
+	this.jump  = function(){
+	};
+
+	this.idle  = function(){
 	};
 };

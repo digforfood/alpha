@@ -18,6 +18,9 @@ $(function(){
 
 
 	var game = new AE();
+	var player = new Player();
+	
 	game.setTilemap(map, game.JSONDATA);
+	game.addGameObj(player);
 	game.init();
 });
