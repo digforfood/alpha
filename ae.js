@@ -11,6 +11,7 @@ var AE = function(){
 	this.keyboardEvents = true;
 	this.tilemap = false;
 
+	this.playerObj = null;
 	this.gameObjectsArr = [];
 	this.keyboard = [];
 
@@ -39,6 +40,10 @@ var AE = function(){
 
 	this.setWindowHeight = function(value){
 		this.windowHeight = value;
+	};
+
+	this.setPlayerObj = function(value){
+		this.playerObj = value;
 	};
 
 	this.setKeyboardEvents = function(value){
@@ -146,18 +151,27 @@ var AE = function(){
 		var idle = true;
 		if(that.keyboard[37]){
 			idle = false;
-		}
-		if(that.keyboard[38]){
-			idle = false;
+			that.playerObj.left();
 		}
 		if(that.keyboard[39]){
 			idle = false;
+			that.playerObj.right();
+		}
+		if(that.keyboard[38]){
+			idle = false;
+			that.playerObj.up();
 		}
 		if(idle){
 		}
 
 		for(var i = 0;i < that.gameObjectsArr.length;i++){
 			that.gameObjectsArr[i].update();
+		}
+		for(var i = 0;i < that.gameObjectsArr.length;i++){
+			that.gameObjectsArr[i].sprite.css({
+				left: that.gameObjectsArr[i].x,
+				top: that.gameObjectsArr[i].y,
+			});
 		}
 	};
 	
@@ -188,7 +202,7 @@ var Tiles = function(sprite,animation){
 	this.class = 'tile';
 	this.sprite = sprite;
 	this.animation = animation;
-	
+
 	this.update = function(){
 	};
 };
@@ -206,25 +220,32 @@ var Player = function(settings){
 	this.img = this.settings.img || 'player.png';
 	this.currentFrame = this.settings.currentFrame || 0;
 	this.acceleration = this.settings.acceleration || 9;
-	this.speed = this.settings.speed || 20;
 	this.status = this.settings.status || "stand";
-	this.horizontalMove = 0;
+	this.xVelocity = 0;
+	this.yVelocity = 0;
 
 	this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
 	this.animation = this.settings.animation||{};
 
 	this.update = function(){
+		this.x += this.xVelocity;
+		this.y += this.yVelocity;
+		
+		this.yVelocity += this.acceleration;
+		this.xVelocity = 0;
 	};
 
 	this.left = function(){
+		this.xVelocity -= 7;
 	};
 
 	this.right = function(){
+		this.xVelocity += 7;
 	};
 
-	this.jump  = function(){
+	this.up = function(){
 	};
 
-	this.idle  = function(){
+	this.idle = function(){
 	};
 };
