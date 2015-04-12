@@ -100,12 +100,9 @@ var AE = function(){
 							img: this.imgDir+this.tilemap.tiles.url,
 							currentFrame: tileType
 						};
-
-						var sprite = new Sprite(options);
-						sprite.addClass("row_"+i).addClass("cell_"+j).data("AE", options);
 						
 						var animation = {};
-						var tile = new Tiles(sprite,animation);
+						var tile = new Tiles(options,animation);
 						this.addGameObj(tile);
 					}
 				}
@@ -198,9 +195,21 @@ var Sprite = function(settings){
 	return this.sprite;
 };
 
-var Tiles = function(sprite,animation){
+var Tiles = function(settings,animation){
 	this.class = 'tile';
-	this.sprite = sprite;
+	this.settings = settings||{};
+
+	this.x = this.settings.x || 0;
+	this.y = this.settings.y || 0;
+
+	this.width = this.settings.width || 70;
+	this.height = this.settings.height || 70;
+
+	this.img = this.settings.img || '';
+	this.currentFrame = this.settings.currentFrame || 1;
+
+	this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
+	this.sprite.data("AE", this.settings);
 	this.animation = animation;
 
 	this.update = function(){
@@ -210,6 +219,7 @@ var Tiles = function(sprite,animation){
 var Player = function(settings){
 	this.class = 'player';
 	this.settings = settings||{};
+	this.gameObjectsArr;
 
 	this.x = this.settings.x || 0;
 	this.y = this.settings.y || 0;
@@ -218,8 +228,8 @@ var Player = function(settings){
 	this.height = this.settings.height || 93;
 
 	this.img = this.settings.img || 'player.png';
-	this.currentFrame = this.settings.currentFrame || 0;
-	this.acceleration = this.settings.acceleration || 9;
+	this.currentFrame = this.settings.currentFrame || 1;
+	this.acceleration = this.settings.acceleration || 8;
 	this.status = this.settings.status || "stand";
 	this.xVelocity = 0;
 	this.yVelocity = 0;
@@ -227,11 +237,53 @@ var Player = function(settings){
 	this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
 	this.animation = this.settings.animation||{};
 
+	this.setGameObjectsArr = function(value){
+		this.gameObjectsArr = value;
+	};
+
+	this.intersect = function(a1,a2,b1,b2){
+	    return [ Math.min(Math.max(a1, b1), a2), Math.max(Math.min(a2, b2), a1)];
+	} 
+
 	this.update = function(){
+		this.yVelocity += this.acceleration;
 		this.x += this.xVelocity;
 		this.y += this.yVelocity;
+
+		var centerX = this.x + this.width/2;
+		var centerY = this.y + this.height/2;
+
+		var collisions = [];
+
+		for (var i = 0; i < this.gameObjectsArr.length; i++) {
+			var gameObject = this.gameObjectsArr[i];
+
+			var spriteCenterX = gameObject.x + gameObject.width/2;
+			var spriteCenterY = gameObject.y + gameObject.height/2;
+			
+			if( !(gameObject.x == this.x && gameObject.y == this.y) ){
+				if( ((this.width/2 + gameObject.width/2) > Math.abs(centerX-spriteCenterX)) && ((this.height/2 + gameObject.height/2) > Math.abs(centerY-spriteCenterY)) ){
+					collisions.push(gameObject);
+				}
+			}
+		}
+
+		for (var i = 0; i < collisions.length; i++) {
+			var gameObject = collisions[i];
+
+			var intersectX = this.intersect(this.x, this.x + this.width, gameObject.x, gameObject.x + gameObject.width);
+            var intersectY = this.intersect(this.y, this.y + this.height, gameObject.y, gameObject.y + gameObject.height);
+            
+            var differenceX = (intersectX[0] === this.x)? intersectX[0]-intersectX[1] : intersectX[1]-intersectX[0];
+            var differenceY = (intersectY[0] === this.y)? intersectY[0]-intersectY[1] : intersectY[1]-intersectY[0];
+            
+
+            if(this.yVelocity > 0 || this.yVelocity < 0){
+            	this.y -= differenceY;
+            	this.yVelocity = 0;
+            }
+		}
 		
-		this.yVelocity += this.acceleration;
 		this.xVelocity = 0;
 	};
 
@@ -244,6 +296,7 @@ var Player = function(settings){
 	};
 
 	this.up = function(){
+		this.yVelocity = -50;
 	};
 
 	this.idle = function(){
