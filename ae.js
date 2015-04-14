@@ -229,7 +229,7 @@ var Player = function(settings){
 
 	this.img = this.settings.img || 'player.png';
 	this.currentFrame = this.settings.currentFrame || 1;
-	this.acceleration = this.settings.acceleration || 8;
+	this.acceleration = this.settings.acceleration || 2;
 	this.status = this.settings.status || "stand";
 	this.xVelocity = 0;
 	this.yVelocity = 0;
@@ -242,7 +242,7 @@ var Player = function(settings){
 	};
 
 	this.intersect = function(a1,a2,b1,b2){
-	    return [ Math.min(Math.max(a1, b1), a2), Math.max(Math.min(a2, b2), a1)];
+		return [ Math.min(Math.max(a1, b1), a2), Math.max(Math.min(a2, b2), a1)];
 	} 
 
 	this.update = function(){
@@ -272,16 +272,16 @@ var Player = function(settings){
 			var gameObject = collisions[i];
 
 			var intersectX = this.intersect(this.x, this.x + this.width, gameObject.x, gameObject.x + gameObject.width);
-            var intersectY = this.intersect(this.y, this.y + this.height, gameObject.y, gameObject.y + gameObject.height);
-            
-            var differenceX = (intersectX[0] === this.x)? intersectX[0]-intersectX[1] : intersectX[1]-intersectX[0];
-            var differenceY = (intersectY[0] === this.y)? intersectY[0]-intersectY[1] : intersectY[1]-intersectY[0];
-            
-
-            if(this.yVelocity > 0 || this.yVelocity < 0){
-            	this.y -= differenceY;
-            	this.yVelocity = 0;
-            }
+			var intersectY = this.intersect(this.y, this.y + this.height, gameObject.y, gameObject.y + gameObject.height);
+			
+			var differenceX = (intersectX[0] === this.x)? intersectX[0]-intersectX[1] : intersectX[1]-intersectX[0];
+			var differenceY = (intersectY[0] === this.y)? intersectY[0]-intersectY[1] : intersectY[1]-intersectY[0];
+			if (Math.abs(differenceX) > Math.abs(differenceY)){
+				 this.y -= differenceY;
+				 this.yVelocity = 0;
+			} else {
+				this.x -= differenceX;
+			}
 		}
 		
 		this.xVelocity = 0;
@@ -296,7 +296,7 @@ var Player = function(settings){
 	};
 
 	this.up = function(){
-		this.yVelocity = -50;
+		this.yVelocity = -20;
 	};
 
 	this.idle = function(){
