@@ -227,7 +227,7 @@ var Player = function(settings){
 	this.width = this.settings.width || 74;
 	this.height = this.settings.height || 93;
 
-	this.img = this.settings.img || 'player.png';
+	this.img = '';
 	this.currentFrame = this.settings.currentFrame || 1;
 	this.acceleration = this.settings.acceleration || 2;
 	this.status = this.settings.status || "stand";
@@ -239,6 +239,13 @@ var Player = function(settings){
 
 	this.setGameObjectsArr = function(value){
 		this.gameObjectsArr = value;
+	};
+
+	this.setSpriteImg = function(value){
+		this.img = value;
+		this.sprite.css({
+			backgroundImage: 'url('+this.img+')'
+		});
 	};
 
 	this.intersect = function(a1,a2,b1,b2){
@@ -276,9 +283,10 @@ var Player = function(settings){
 			
 			var differenceX = (intersectX[0] === this.x)? intersectX[0]-intersectX[1] : intersectX[1]-intersectX[0];
 			var differenceY = (intersectY[0] === this.y)? intersectY[0]-intersectY[1] : intersectY[1]-intersectY[0];
+			
 			if (Math.abs(differenceX) > Math.abs(differenceY)){
-				 this.y -= differenceY;
-				 this.yVelocity = 0;
+				this.y -= differenceY;
+				this.yVelocity = 0;
 			} else {
 				this.x -= differenceX;
 			}

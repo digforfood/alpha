@@ -22,6 +22,7 @@ $(function(){
 
 	game.setTilemap(map, game.JSONDATA);
 
+	player.setSpriteImg('player.png');
 	player.setGameObjectsArr(game.gameObjectsArr);
 
 	game.setPlayerObj(player);
