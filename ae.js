@@ -17,6 +17,7 @@ var AE = function(){
 
 	this.startButton = $('<div id="startButton" style="width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;background:'+this.startImg+' #A8E1FF;">');
 	this.gameFrame = $('<div id="gameFrame" style="display:none;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;">');
+	this.gameObjectsFrame = $('<div class="gameObjectsFrame" style="position:absolute"></div>');
 
 	this.addGameObj = function(obj){
 		this.gameObjectsArr.push(obj);
@@ -65,18 +66,25 @@ var AE = function(){
 		}
 	};
 
+	this.moveCamera = function(){
+		if(this.playerObj.x > 200) {
+            this.gameObjectsFrame.css({
+				left: (200 - this.playerObj.x) + 'px'
+			});
+        }
+	};
+
 	this.createGameFrame = function(){
-		var gameObjectsFrame = $('<div class="gameObjectsFrame" style="position:absolute"></div>');
 		var tilemapFrame = $('<div class="tilemapFrame" style="position:absolute"></div>');
 		for(var i = 0;i < this.gameObjectsArr.length;i++){
 			if(this.gameObjectsArr[i].class == 'tile'){
 				tilemapFrame.append(this.gameObjectsArr[i].sprite);
 			}else if(this.gameObjectsArr[i].class == 'player'){
-				gameObjectsFrame.append(this.gameObjectsArr[i].sprite);
+				this.gameObjectsFrame.append(this.gameObjectsArr[i].sprite);
 			}
 		}
-		gameObjectsFrame.append(tilemapFrame);
-		this.gameFrame.append(gameObjectsFrame);
+		this.gameObjectsFrame.append(tilemapFrame);
+		this.gameFrame.append(this.gameObjectsFrame);
 	};
 
 	this.createTilemap = function(){
@@ -159,17 +167,21 @@ var AE = function(){
 			that.playerObj.up();
 		}
 		if(idle){
+			that.playerObj.idle();
 		}
 
 		for(var i = 0;i < that.gameObjectsArr.length;i++){
 			that.gameObjectsArr[i].update();
 		}
+
 		for(var i = 0;i < that.gameObjectsArr.length;i++){
 			that.gameObjectsArr[i].sprite.css({
 				left: that.gameObjectsArr[i].x,
 				top: that.gameObjectsArr[i].y,
 			});
 		}
+
+		that.moveCamera();
 	};
 	
 };
@@ -202,8 +214,8 @@ var Tiles = function(settings,animation){
 	this.x = this.settings.x || 0;
 	this.y = this.settings.y || 0;
 
-	this.width = this.settings.width || 70;
-	this.height = this.settings.height || 70;
+	this.width = this.settings.width || 48;
+	this.height = this.settings.height || 48;
 
 	this.img = this.settings.img || '';
 	this.currentFrame = this.settings.currentFrame || 1;
@@ -219,33 +231,73 @@ var Tiles = function(settings,animation){
 var Player = function(settings){
 	this.class = 'player';
 	this.settings = settings||{};
+	this.game;
 	this.gameObjectsArr;
 
 	this.x = this.settings.x || 0;
 	this.y = this.settings.y || 0;
 
-	this.width = this.settings.width || 74;
-	this.height = this.settings.height || 93;
+	this.width = this.settings.width || 55;
+	this.height = this.settings.height || 72;
 
 	this.img = '';
-	this.currentFrame = this.settings.currentFrame || 1;
+	this.animationCounter = 0;
+	this.currentFrame = 1;
+	this.currentAnimation;
+	this.direction;
+	this.status = null;
+	
 	this.acceleration = this.settings.acceleration || 2;
-	this.status = this.settings.status || "stand";
 	this.xVelocity = 0;
 	this.yVelocity = 0;
 
-	this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
-	this.animation = this.settings.animation||{};
+	this.animationStates = {
+		stand:{
+			offsetX:1,
+			offsetY:2,
+			frames:4
+		},
+		walk:{
+			offsetX:1,
+			offsetY:1,
+			frames:4
+		},
+		up:{
+			offsetX:1,
+			offsetY:3,
+			frames:1
+		}
+	};
 
-	this.setGameObjectsArr = function(value){
-		this.gameObjectsArr = value;
+	this.sprite = new Sprite({x:this.x,y:this.y,width:this.width,height:this.height,img:this.img,currentFrame:this.currentFrame});
+
+	this.setGame = function(value){
+		this.game = value;
+		this.gameObjectsArr = this.game.gameObjectsArr;
 	};
 
 	this.setSpriteImg = function(value){
-		this.img = value;
+		this.img = this.game.imgDir + value;
 		this.sprite.css({
 			backgroundImage: 'url('+this.img+')'
 		});
+	};
+
+	this.animate = function(){
+		this.sprite.css({
+			backgroundPosition: (-(this.currentFrame-1)*this.width - this.width*(this.currentAnimation.offsetX-1)) + 'px '+(-this.height*(this.currentAnimation.offsetY-1))+'px',
+			transform: 'scale(' + this.direction + ', 1)'
+		});
+
+		this.animationCounter++;
+		if(this.animationCounter >= Math.floor(this.game.baseRate/this.currentAnimation.frames)){
+			this.animationCounter = 0;
+			if(this.currentFrame == this.currentAnimation.frames){
+				this.currentFrame = 1;
+			}else{
+				this.currentFrame++;
+			}
+		}
 	};
 
 	this.intersect = function(a1,a2,b1,b2){
@@ -270,6 +322,7 @@ var Player = function(settings){
 			
 			if( !(gameObject.x == this.x && gameObject.y == this.y) ){
 				if( ((this.width/2 + gameObject.width/2) > Math.abs(centerX-spriteCenterX)) && ((this.height/2 + gameObject.height/2) > Math.abs(centerY-spriteCenterY)) ){
+					//console.log('sprite: x='+ gameObject.x + ' y=' + gameObject.y + '  player: x='+this.x + ' y=' + this.y);
 					collisions.push(gameObject);
 				}
 			}
@@ -287,26 +340,59 @@ var Player = function(settings){
 			if (Math.abs(differenceX) > Math.abs(differenceY)){
 				this.y -= differenceY;
 				this.yVelocity = 0;
+				if(this.status == 'up'){
+					this.status = 'stand';
+					this.currentAnimation = this.animationStates.stand;
+					this.currentFrame = this.currentAnimation.offsetX;
+				}
+
 			} else {
 				this.x -= differenceX;
 			}
 		}
 		
 		this.xVelocity = 0;
+		this.animate();
 	};
 
 	this.left = function(){
 		this.xVelocity -= 7;
+
+		if(this.direction !== -1) this.direction = -1;
+
+		if(this.status == 'stand'){
+			this.status = 'walk';
+			this.currentAnimation = this.animationStates.walk;
+			this.currentFrame = this.currentAnimation.offsetX;
+		}
 	};
 
 	this.right = function(){
 		this.xVelocity += 7;
+
+		if(this.direction !== 1) this.direction = 1;
+
+		if(this.status == 'stand'){
+			this.status = 'walk';
+			this.currentAnimation = this.animationStates.walk;
+			this.currentFrame = this.currentAnimation.offsetX;
+		}
 	};
 
 	this.up = function(){
-		this.yVelocity = -20;
+		if(this.status != 'up'){
+			this.status = 'up';
+			this.yVelocity = -20;
+			this.currentAnimation = this.animationStates.up;
+			this.currentFrame = this.currentAnimation.offsetX;
+		}
 	};
 
 	this.idle = function(){
+		if(this.status == 'walk' || !this.status){
+			this.status = 'stand';
+			this.currentAnimation = this.animationStates.stand;
+			this.currentFrame = this.currentAnimation.offsetX;
+		}		
 	};
 };
