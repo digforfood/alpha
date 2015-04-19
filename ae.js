@@ -3,6 +3,8 @@ var AE = function(){
 	this.JSONDATA = 'jsondata';
 	this.JSONURL = 'jsonurl';
 
+	this.networkConnector = new XMLHttpRequest();
+
 	this.imgDir = '';
 	this.startImg = '';
 	this.baseRate = 30;
@@ -15,8 +17,8 @@ var AE = function(){
 	this.gameObjectsArr = [];
 	this.keyboard = [];
 
-	this.startButton = $('<div id="startButton" style="width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;background:'+this.startImg+' #A8E1FF;">');
-	this.gameFrame = $('<div id="gameFrame" style="display:none;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;">');
+	this.startButton = $('<div id="startButton" style="width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;background:'+this.startImg+' #A8E1FF;"></div>');
+	this.gameFrame = $('<div id="gameFrame" style="display:none;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;"></div>');
 	this.gameObjectsFrame = $('<div class="gameObjectsFrame" style="position:absolute"></div>');
 
 	this.addGameObj = function(obj){
@@ -67,11 +69,11 @@ var AE = function(){
 	};
 
 	this.moveCamera = function(){
-		if(this.playerObj.x > 200) {
-            this.gameObjectsFrame.css({
-				left: (200 - this.playerObj.x) + 'px'
+		if(this.playerObj.x > this.gameFrame.width()/2) {
+			this.gameObjectsFrame.css({
+				left: (this.gameFrame.width()/2 - this.playerObj.x) + 'px'
 			});
-        }
+		}
 	};
 
 	this.createGameFrame = function(){
@@ -174,10 +176,10 @@ var AE = function(){
 			that.gameObjectsArr[i].update();
 		}
 
-		for(var i = 0;i < that.gameObjectsArr.length;i++){
-			that.gameObjectsArr[i].sprite.css({
-				left: that.gameObjectsArr[i].x,
-				top: that.gameObjectsArr[i].y,
+		for(var j = 0;j < that.gameObjectsArr.length;j++){
+			that.gameObjectsArr[j].sprite.css({
+				left: that.gameObjectsArr[j].x,
+				top: that.gameObjectsArr[j].y,
 			});
 		}
 
@@ -230,6 +232,7 @@ var Tiles = function(settings,animation){
 
 var Player = function(settings){
 	this.class = 'player';
+	this.name = 'vasia1';
 	this.settings = settings||{};
 	this.game;
 	this.gameObjectsArr;
@@ -340,7 +343,7 @@ var Player = function(settings){
 			if (Math.abs(differenceX) > Math.abs(differenceY)){
 				this.y -= differenceY;
 				this.yVelocity = 0;
-				if(this.status == 'up'){
+				if(this.status == 'up' && differenceY > 0){
 					this.status = 'stand';
 					this.currentAnimation = this.animationStates.stand;
 					this.currentFrame = this.currentAnimation.offsetX;
