@@ -3,7 +3,8 @@ var AE = function(){
 	this.JSONDATA = 'jsondata';
 	this.JSONURL = 'jsonurl';
 
-	this.networkConnector = new XMLHttpRequest();
+	this.networkMode = false;
+	this.networkQueue = [];
 
 	this.imgDir = '';
 	this.startImg = '';
@@ -18,11 +19,16 @@ var AE = function(){
 	this.keyboard = [];
 
 	this.startButton = $('<div id="startButton" style="width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;background:'+this.startImg+' #A8E1FF;"></div>');
+
 	this.gameFrame = $('<div id="gameFrame" style="display:none;width:'+this.windowWidth+'px;height:'+this.windowHeight+'px;"></div>');
 	this.gameObjectsFrame = $('<div class="gameObjectsFrame" style="position:absolute"></div>');
 
 	this.addGameObj = function(obj){
 		this.gameObjectsArr.push(obj);
+	};
+
+	this.setNetworkMode = function(value){
+		this.networkMode = value;
 	};
 
 	this.setImgDir = function(value){
@@ -66,6 +72,22 @@ var AE = function(){
 				}
 			});
 		}
+	};
+
+	this.networkRequest = function(){
+		$.getJSON(
+			"update.php",
+      		{
+  				name: that.playerObj.name, 
+  				x: that.playerObj.x, 
+  				y: that.playerObj.y,
+  				dir: that.playerObj.direction,
+  				state: that.playerObj.status
+  			},
+  			function(json,status){
+  				that.networkQueue.push(json.players);
+  			}
+  		);
 	};
 
 	this.moveCamera = function(){
@@ -148,6 +170,7 @@ var AE = function(){
 	this.startGame = function(){
 
 		setInterval(this.gameLoop, this.baseRate);
+		if(this.networkMode)setInterval(this.networkRequest, 60);
 
 		$('#game').append(this.gameFrame);
 		this.startButton.remove();
@@ -170,6 +193,10 @@ var AE = function(){
 		}
 		if(idle){
 			that.playerObj.idle();
+		}
+
+		if(that.networkQueue.length > 0){
+			//
 		}
 
 		for(var i = 0;i < that.gameObjectsArr.length;i++){

@@ -24,6 +24,7 @@ $(function(){
 
 	game.setImgDir('src');
 	game.setTilemap(map, game.JSONDATA);
+	//game.setNetworkMode(true);
 
 	player.setGame(game);
 	player.setSpriteImg('player.png');
